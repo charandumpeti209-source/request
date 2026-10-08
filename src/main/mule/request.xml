@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e8ca68b9-dc51-4ec2-9080-61c84cd31710" >
+		<http:listener-connection host="localhost" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="f466f3dd-2017-4551-ac52-7be346395a74" >
+		<http:request-connection host="training4-american-ws.cloudhub.io" port="80" />
+	</http:request-config>
+	<flow name="requestFlow" doc:id="ba356da4-3bc2-40f3-901c-b61c46e30c77" >
+		<http:listener doc:name="Listener" doc:id="7dd8efdc-087d-4d9f-8b2a-1fe931c4e652" config-ref="HTTP_Listener_config" path="/request"/>
+		<logger level="INFO" doc:name="Logger" doc:id="f7bb888e-bed4-4b6e-8ffb-f03a39ea6bdb" message="flow started"/>
+		<http:request method="GET" doc:name="Request" doc:id="92515ce1-c8c1-4df2-973e-117639ede347" config-ref="HTTP_Request_configuration" path="/api/flights"/>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="cac214e5-ec4a-4482-8427-693c22525932" variableName="firstPayload"/>
+		<ee:transform doc:name="Transform Message" doc:id="96b00307-c224-4a67-8130-9ac0e3163d18" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "flights database"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="e50e5fb8-2e87-48cc-8cdb-57e5aed0b2d3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars."firstPayload" ++ payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="3e482c62-b18f-4a6b-b758-6cdbf29842a6" message="ended"/>
+	</flow>
+</mule>
